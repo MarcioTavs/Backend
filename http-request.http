@@ -1,0 +1,19 @@
+###
+PUT http://localhost:8080/api/admin/update-admin?
+    adminEmail=marcio@gmail.com
+Content-Type: application/json
+{
+"firstName": "NewFirst",
+   "lastName": "NewLast",
+   "email": "newemail@example.com",
+   "phoneNumber": "1234567890",
+   "organizationName": "New Org",
+   "password": "newpassword",
+   "confirmPassword": "newpassword"
+}
+
+
+
+//Create a department
+
+###
