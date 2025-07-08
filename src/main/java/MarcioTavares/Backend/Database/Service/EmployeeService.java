@@ -4,6 +4,7 @@ package MarcioTavares.Backend.Database.Service;
 import MarcioTavares.Backend.Database.DTO.EmployeeUpdateRequest;
 
 import MarcioTavares.Backend.Database.Model.Employee;
+
 import MarcioTavares.Backend.Database.Repository.EmployeeRepository;
 import MarcioTavares.Backend.Security.Model.Role;
 import MarcioTavares.Backend.Security.Model.User;
@@ -20,9 +21,10 @@ import java.util.Objects;
 @AllArgsConstructor
 public class EmployeeService {
 
+    // private final DepartmentRepository departmentRepository; 
     private final EmployeeRepository employeeRepository;
     private final UserRepository userRepository;
-
+    // private final EmailService emailService;
 
 
     public List<Employee> getAllEmployees() {

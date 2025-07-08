@@ -1,9 +1,8 @@
 package MarcioTavares.Backend.Database.Controller;
 
-
-//import MarcioTavares.Backend.Database.DTO.AdminUpdateRequest;
 import MarcioTavares.Backend.Database.DTO.AdminUpdateRequest;
 import MarcioTavares.Backend.Database.DTO.DepartmentDTO;
+import MarcioTavares.Backend.Database.DTO.DepartmentUpdateRequest;
 import MarcioTavares.Backend.Database.DTO.EmployeeDTO;
 import MarcioTavares.Backend.Database.Model.Admin;
 import MarcioTavares.Backend.Database.Model.Department;
@@ -40,6 +39,20 @@ public class AdminController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
+    }
+
+
+    @PutMapping("/update-department")
+    public ResponseEntity<?> updateDepartment(@RequestBody DepartmentUpdateRequest departmentUpdateRequest, @RequestParam String departId) {
+        try{
+            Department updatedDepartment =departmentService.updateDepartment(departmentUpdateRequest , departId);
+            return ResponseEntity.ok(updatedDepartment);
+
+        }catch (Exception e){
+            System.out.printf("Error: %s\n",e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+
     }
 
 

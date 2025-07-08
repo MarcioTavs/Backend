@@ -1,8 +1,4 @@
 package MarcioTavares.Backend.Database.Controller;
-
-
-import MarcioTavares.Backend.Database.DTO.DepartmentDTO;
-import MarcioTavares.Backend.Database.DTO.EmployeeDTO;
 import MarcioTavares.Backend.Database.DTO.EmployeeUpdateRequest;
 import MarcioTavares.Backend.Database.Model.Employee;
 import MarcioTavares.Backend.Database.Service.EmployeeService;
