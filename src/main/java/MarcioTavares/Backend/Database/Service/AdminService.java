@@ -73,44 +73,55 @@ public class AdminService {
     }
 
     @Transactional
-    public Admin updateAdminData(AdminUpdateRequest adminUpdate , String adminEmail) {
-        Admin admin = adminRepository.findByEmail(adminEmail).orElseThrow(() -> new IllegalArgumentException("Admin not found"));
-        if (admin.getOrganizationName() != null) {
+    public Admin updateAdminData(AdminUpdateRequest adminUpdate, String adminEmail) {
+
+        Admin admin = adminRepository.findByEmail(adminEmail)
+            .orElseThrow(() -> new IllegalArgumentException("Admin not found"));
+        
+
+        if (adminUpdate.getOrganizationName() != null) {
             admin.setOrganizationName(adminUpdate.getOrganizationName());
         }
-
-        if (admin.getFirstName() != null) {
+        if (adminUpdate.getFirstName() != null) {
             admin.setFirstName(adminUpdate.getFirstName());
         }
-        if (admin.getLastName() != null) {
+        if (adminUpdate.getLastName() != null) {
             admin.setLastName(adminUpdate.getLastName());
         }
-        if (admin.getPhoneNumber() != null) {
+        if (adminUpdate.getPhoneNumber() != null) {
             admin.setPhoneNumber(adminUpdate.getPhoneNumber());
-
         }
-        if (admin.getEmail() != null) {
-            admin.setEmail(adminUpdate.getEmail());
-        }
-        User user = userRepository.findByEmail(admin.getEmail()).orElseThrow(() -> new IllegalArgumentException("User not found"));
+        
 
+        User user = userRepository.findByEmail(adminEmail)
+            .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-        try {
-            if (user.getRole() == Role.ADMIN) {
-
-                if (adminUpdate.getPassword() != null &&
-                        adminUpdate.getConfirmPassword() != null &&
-                        adminUpdate.getPassword().equals(adminUpdate.getConfirmPassword())) {
-                    user.setPassword(adminUpdate.getPassword());
-                }
+        if (adminUpdate.getEmail() != null && !adminUpdate.getEmail().equals(adminEmail)) {
+            if (userRepository.existsByEmail(adminUpdate.getEmail())) {
+                throw new RuntimeException("Email already exists");
             }
-        } catch (Exception e) {
-            throw new RuntimeException("Error updating admin password");
+            admin.setEmail(adminUpdate.getEmail());
+            user.setEmail(adminUpdate.getEmail());
+        }
+
+        if (adminUpdate.getFirstName() != null || adminUpdate.getLastName() != null) {
+            String newUsername = (adminUpdate.getFirstName() != null ? adminUpdate.getFirstName() : admin.getFirstName()) + 
+                               " " + (adminUpdate.getLastName() != null ? adminUpdate.getLastName() : admin.getLastName());
+            user.setUsername(newUsername);
+        }
+        
+
+        if (adminUpdate.getPassword() != null && 
+            adminUpdate.getConfirmPassword() != null && 
+            adminUpdate.getPassword().equals(adminUpdate.getConfirmPassword())) {
+            user.setPassword(adminUpdate.getPassword());
+        } else if (adminUpdate.getPassword() != null || adminUpdate.getConfirmPassword() != null) {
+            throw new RuntimeException("Password and confirm password must match");
         }
 
         adminRepository.save(admin);
         userRepository.save(user);
-
+        
         return admin;
     }
 
