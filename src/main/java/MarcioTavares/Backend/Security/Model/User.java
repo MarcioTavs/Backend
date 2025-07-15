@@ -36,7 +36,7 @@ public class User {
     private String apikey;
 
     @Column(nullable = false)
-    private boolean isActive = true;
+    private boolean isActive = false;
 
     @Column(nullable = false)
     private LocalDateTime createdAt;

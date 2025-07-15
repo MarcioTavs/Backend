@@ -15,7 +15,11 @@ import MarcioTavares.Backend.Security.Model.User;
 import MarcioTavares.Backend.Security.Repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 
@@ -27,8 +31,7 @@ public class AdminService {
     private final EmailService emailService;
     private final UserRepository userRepository;
     private final DepartmentRepository departmentRepository;
-
-
+    private final PasswordEncoder passwordEncoder;
 
 
     public void createAdmin(Admin admin){
@@ -62,7 +65,8 @@ public class AdminService {
         employeeUser.setApikey(UUID.randomUUID().toString());
         employeeUser.setRole(Role.EMPLOYEE);
         employeeUser.setUsername(employee.getFirstName() + " " + employee.getLastName());
-        employeeUser.setActive(true);
+        employeeUser.setActive(false);
+        employeeUser.setCreatedAt(LocalDateTime.now());
 
         employeeRepository.save(emp);
         userRepository.save(employeeUser);
@@ -114,7 +118,7 @@ public class AdminService {
         if (adminUpdate.getPassword() != null && 
             adminUpdate.getConfirmPassword() != null && 
             adminUpdate.getPassword().equals(adminUpdate.getConfirmPassword())) {
-            user.setPassword(adminUpdate.getPassword());
+            user.setPassword(passwordEncoder.encode(adminUpdate.getPassword()));
         } else if (adminUpdate.getPassword() != null || adminUpdate.getConfirmPassword() != null) {
             throw new RuntimeException("Password and confirm password must match");
         }

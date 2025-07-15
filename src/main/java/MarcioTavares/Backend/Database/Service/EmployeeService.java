@@ -10,6 +10,7 @@ import MarcioTavares.Backend.Security.Model.User;
 import MarcioTavares.Backend.Security.Repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -23,7 +24,7 @@ public class EmployeeService {
 
     private final EmployeeRepository employeeRepository;
     private final UserRepository userRepository;
-
+    private final PasswordEncoder passwordEncoder;
 
 
     public List<Employee> getAllEmployees() {
@@ -56,7 +57,7 @@ public class EmployeeService {
         if (employeeUpdate.getPassword() != null && 
             employeeUpdate.getConfirmPassword() != null && 
             employeeUpdate.getPassword().equals(employeeUpdate.getConfirmPassword())) {
-            user.setPassword(employeeUpdate.getPassword());
+            user.setPassword(passwordEncoder.encode(employeeUpdate.getPassword()));
         } else if (employeeUpdate.getPassword() != null || employeeUpdate.getConfirmPassword() != null) {
             throw new RuntimeException("Password and confirm password must match");
         }
@@ -73,6 +74,8 @@ public class EmployeeService {
             throw new IllegalArgumentException("Invalid API key provided");
 
         }
+        employee.setActive(true);
+        userRepository.save(employee);
     }
 
 

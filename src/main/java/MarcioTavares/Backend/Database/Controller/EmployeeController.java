@@ -26,7 +26,7 @@ public class EmployeeController {
         }
     }
 
-    @PostMapping("/confirm")
+    @PostMapping("/Profile/confirm")
     public ResponseEntity<?> confirmEmployee(@RequestBody EmployeeUpdateRequest employeeUpdateRequest, @RequestParam String employeeEmail) {
         try{
             Employee emp = employeeService.updateEmployeeData(employeeUpdateRequest, employeeEmail);

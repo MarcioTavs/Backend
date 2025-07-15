@@ -24,5 +24,5 @@ public class Admin {
     private String lastName;
     private String email;
     private String phoneNumber;
-    private String adminId;
+    private String username;
 }

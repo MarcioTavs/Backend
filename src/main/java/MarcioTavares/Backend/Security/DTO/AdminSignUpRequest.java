@@ -1,9 +1,9 @@
-package MarcioTavares.Backend.Database.DTO;
+package MarcioTavares.Backend.Security.DTO;
 
 import lombok.Data;
 
 @Data
-public class AdminUpdateRequest {
+public class AdminSignUpRequest {
     private String organizationName;
     private String firstName;
     private String lastName;
@@ -13,3 +13,4 @@ public class AdminUpdateRequest {
     private String password;
     private String confirmPassword;
 }
+ 
