@@ -64,7 +64,7 @@ public class AdminService {
         employeeUser.setEmployee(emp);
         employeeUser.setApikey(UUID.randomUUID().toString());
         employeeUser.setRole(Role.EMPLOYEE);
-        employeeUser.setUsername(employee.getFirstName() + " " + employee.getLastName());
+        employeeUser.setUsername(employee.getEmail());
         employeeUser.setActive(false);
         employeeUser.setCreatedAt(LocalDateTime.now());
 
