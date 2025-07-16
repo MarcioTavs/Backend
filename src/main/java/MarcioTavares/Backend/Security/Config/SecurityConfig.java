@@ -58,8 +58,11 @@ public class SecurityConfig {
                 .requestMatchers("/api/public/**").permitAll()
                 .requestMatchers("/api/employee/activate-account").permitAll() //
                  .requestMatchers("/api/employee/Profile/confirm").permitAll() //
+                    .requestMatchers("/api/attendance/**").hasRole("EMPLOYEE")
+                    .requestMatchers("/api/employee/login").permitAll()
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .requestMatchers("/api/employee/**").hasAnyRole("EMPLOYEE", "ADMIN")
+                    .requestMatchers("/api/payroll/**").permitAll()
                 .anyRequest().authenticated()
             )
             .authenticationProvider(authenticationProvider())
@@ -67,4 +70,6 @@ public class SecurityConfig {
 
         return http.build();
     }
+
+
 }
