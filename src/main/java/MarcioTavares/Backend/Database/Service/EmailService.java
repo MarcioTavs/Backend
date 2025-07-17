@@ -17,7 +17,7 @@ public class EmailService {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(to);
         message.setFrom(EMAIL_FROM);
-        message.setSubject("Please login and activate your account using the email and apikey");
+        message.setSubject("Please activate your account and Login with this credentials");
         message.setText("Email: " + to + "\nAPI Key: " + apikey );
         mailSender.send(message);
     }

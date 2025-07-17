@@ -97,7 +97,7 @@ public class AuthService {
 
     private UserDetails createUserDetails(User user) {
         return new org.springframework.security.core.userdetails.User(
-                user.getEmail(),
+                user.getUsername(),
                 user.getPassword(),
                 user.isActive(),
                 true,
@@ -106,4 +106,6 @@ public class AuthService {
                 java.util.Collections.singleton(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_" + user.getRole().name()))
         );
     }
-} 
+
+}
+
