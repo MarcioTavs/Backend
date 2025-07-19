@@ -40,6 +40,27 @@ public class TimingController {
     }
 
 
+    @PostMapping("/startBreak")
+    public ResponseEntity<?> startBreak() {
+        try {
+            AttendanceSheet att = timingService.startBreak();
+            return ResponseEntity.ok(att);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/endBreak")
+    public ResponseEntity<?> endBreak() {
+        try {
+            AttendanceSheet att = timingService.endBreak();
+            return ResponseEntity.ok(att);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+
 
 
 }

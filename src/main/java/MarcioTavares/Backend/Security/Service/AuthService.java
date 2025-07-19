@@ -16,6 +16,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 public class AuthService {
@@ -36,6 +37,8 @@ public class AuthService {
     private AuthenticationManager authenticationManager;
 
     public AuthResponse registerAdmin(AdminSignUpRequest request) {
+
+        
         if (userRepository.existsByUsername(request.getUsername())) {
             throw new RuntimeException("Username already exists");
         }
@@ -94,6 +97,7 @@ public class AuthService {
 
         return new AuthResponse(token, user.getUsername(), user.getRole().name(), "Login successful");
     }
+
 
     private UserDetails createUserDetails(User user) {
         return new org.springframework.security.core.userdetails.User(

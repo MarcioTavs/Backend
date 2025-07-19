@@ -4,12 +4,12 @@ package MarcioTavares.Backend.Database.Service;
 import MarcioTavares.Backend.Database.Model.AttendanceSheet;
 import MarcioTavares.Backend.Database.Model.Employee;
 import MarcioTavares.Backend.Database.Repository.AttendanceRepository;
-import MarcioTavares.Backend.Database.Repository.EmployeeRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -19,7 +19,7 @@ import java.util.Optional;
 public class TimingService {
     private final EmployeeService employeeService;
     private final AttendanceRepository attendanceRepository;
-    private final EmployeeRepository employeeRepository;
+   
 
     @Transactional
     public AttendanceSheet clockIn(){
@@ -70,5 +70,41 @@ public class TimingService {
 
         return attendanceRepository.save(att);
 
+    }
+
+
+    @Transactional
+    public AttendanceSheet startBreak() {
+        Employee emp = employeeService.getCurrentAuthenticatedEmployee();
+        AttendanceSheet att = attendanceRepository.findByEmployeeAndClockOutTimeIsNull(emp)
+                .orElseThrow(() -> new IllegalStateException("No active clock-in session found"));
+
+        // Check if already on a break
+        if (att.getBreakStartTime() != null && att.getBreakEndTime() == null) {
+            throw new IllegalStateException("A break is already in progress");
+        }
+
+        att.setBreakStartTime(LocalDateTime.now());
+        att.setBreakEndTime(null); // Reset end time for new break
+        return attendanceRepository.save(att);
+    }
+
+
+    @Transactional
+    public AttendanceSheet endBreak() {
+        Employee emp = employeeService.getCurrentAuthenticatedEmployee();
+        AttendanceSheet att = attendanceRepository.findByEmployeeAndClockOutTimeIsNullAndBreakStartTimeIsNotNullAndBreakEndTimeIsNull(emp)
+                .orElseThrow(() -> new IllegalStateException("No active break found"));
+
+        LocalDateTime breakEndTime = LocalDateTime.now();
+        if (breakEndTime.isBefore(att.getBreakStartTime())) {
+            throw new IllegalArgumentException("Break end time cannot be before break start time");
+        }
+
+        long breakMinutes = Duration.between(att.getBreakStartTime(), breakEndTime).toMinutes();
+        att.setBreakInMinutes(att.getBreakInMinutes() + (int) breakMinutes);
+        att.setBreakStartTime(null);
+        att.setBreakEndTime(breakEndTime);
+        return attendanceRepository.save(att);
     }
 }

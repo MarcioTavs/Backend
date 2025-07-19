@@ -12,6 +12,8 @@ public interface AttendanceRepository extends JpaRepository<AttendanceSheet , Lo
 
     Optional<AttendanceSheet> findByEmployeeAndClockOutTimeIsNull(Employee employee);
     boolean existsByEmployeeAndDate(Employee employee, LocalDate date);
+    Optional<AttendanceSheet>
+    findByEmployeeAndClockOutTimeIsNullAndBreakStartTimeIsNotNullAndBreakEndTimeIsNull(Employee employee);
 
     List<AttendanceSheet> findByEmployeeAndDateBetween(Employee employee,LocalDate startDate, LocalDate endDate);
     List<AttendanceSheet> findByDateBetween(LocalDate startDate, LocalDate endDate);

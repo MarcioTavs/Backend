@@ -155,6 +155,8 @@ public class PayrollReportService {
         return style;
     }
 
+
+
     // Inner class for payroll calculations
     private static class PayrollData {
         private int totalDays;

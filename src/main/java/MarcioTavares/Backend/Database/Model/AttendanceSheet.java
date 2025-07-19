@@ -11,7 +11,7 @@ import java.math.RoundingMode;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-
+import java.time.LocalTime;
 
 
 @Table
@@ -27,6 +27,8 @@ public class AttendanceSheet {
     private LocalDate date;
     private LocalDateTime clockInTime;
     private LocalDateTime clockOutTime;
+    private LocalDateTime breakStartTime;
+    private LocalDateTime breakEndTime;
     private Integer breakInMinutes;
     private BigDecimal totalHours;
 
@@ -54,5 +56,7 @@ public class AttendanceSheet {
 
         }
     }
+
+
 
 }
