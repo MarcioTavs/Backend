@@ -59,11 +59,13 @@ public class EmployeeService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        if (employeeUpdate.getFirstName() != null || employeeUpdate.getLastName() != null) {
-            String newUsername = (employeeUpdate.getFirstName() != null ? employeeUpdate.getFirstName() : emp.getFirstName()) +
-                    " " + (employeeUpdate.getLastName() != null ? employeeUpdate.getLastName() : emp.getLastName());
-            user.setUsername(newUsername);
-        }
+//        if (employeeUpdate.getFirstName() != null || employeeUpdate.getLastName() != null) {
+//            String newUsername = (employeeUpdate.getFirstName() != null ? employeeUpdate.getFirstName() : emp.getFirstName()) +
+//                    " " + (employeeUpdate.getLastName() != null ? employeeUpdate.getLastName() : emp.getLastName());
+//            user.setUsername(newUsername);
+//        }
+
+
         if (employeeUpdate.getPassword() != null &&
                 employeeUpdate.getConfirmPassword() != null &&
                 employeeUpdate.getPassword().equals(employeeUpdate.getConfirmPassword())) {
@@ -101,7 +103,7 @@ public class EmployeeService {
 
         Object principal = authentication.getPrincipal();
         if (principal instanceof UserDetails userDetails) {
-            return userRepository.findByEmail(userDetails.getUsername())
+            return userRepository.findByEmail(userDetails.getUsername())// i changed it from email to username
                     .orElseThrow(() -> new RuntimeException("User not found"))
                     .getEmployee();
         }
@@ -110,20 +112,20 @@ public class EmployeeService {
     }
 
 
-    public AuthResponse loginEmployee(AuthRequest request) {
-        User user = userRepository.findByEmail(request.getUsername())
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(user.getUsername(), request.getPassword()));
-
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        String token = jwtUtil.generateToken(userDetails);
-
-        return new AuthResponse(token, user.getUsername(), user.getRole().name(), "Login successful");
-
-    }
+//    public AuthResponse loginEmployee(AuthRequest request) {
+//        User user = userRepository.findByEmail(request.getUsername())
+//                .orElseThrow(() -> new RuntimeException("User not found"));
+//
+//
+//        Authentication authentication = authenticationManager.authenticate(
+//                new UsernamePasswordAuthenticationToken(user.getUsername(), request.getPassword()));
+//
+//        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+//        String token = jwtUtil.generateToken(userDetails);
+//
+//        return new AuthResponse(token, user.getUsername(), user.getRole().name(), "Login successful");
+//
+//    }
 
     private UserDetails createUserDetails(User user) {
         return new org.springframework.security.core.userdetails.User(

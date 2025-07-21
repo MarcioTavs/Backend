@@ -64,7 +64,7 @@ public class AdminService {
         employeeUser.setEmployee(emp);
         employeeUser.setApikey(UUID.randomUUID().toString());
         employeeUser.setRole(Role.EMPLOYEE);
-        employeeUser.setUsername(employee.getFirstName() + " " + employee.getLastName());
+        employeeUser.setUsername(employee.getEmail());
         employeeUser.setActive(false);
         employeeUser.setCreatedAt(LocalDateTime.now());
 
@@ -106,14 +106,15 @@ public class AdminService {
             }
             admin.setEmail(adminUpdate.getEmail());
             user.setEmail(adminUpdate.getEmail());
+            user.setUsername(adminUpdate.getEmail());
         }
-
-        if (adminUpdate.getFirstName() != null || adminUpdate.getLastName() != null) {
-            String newUsername = (adminUpdate.getFirstName() != null ? adminUpdate.getFirstName() : admin.getFirstName()) + 
-                               " " + (adminUpdate.getLastName() != null ? adminUpdate.getLastName() : admin.getLastName());
-            user.setUsername(newUsername);
-        }
-        
+//
+//        if (adminUpdate.getFirstName() != null || adminUpdate.getLastName() != null) {
+//            String newUsername = (adminUpdate.getFirstName() != null ? adminUpdate.getFirstName() : admin.getFirstName()) +
+//                               " " + (adminUpdate.getLastName() != null ? adminUpdate.getLastName() : admin.getLastName());
+//            user.setUsername(newUsername);
+//        }
+//
 
         if (adminUpdate.getPassword() != null && 
             adminUpdate.getConfirmPassword() != null && 

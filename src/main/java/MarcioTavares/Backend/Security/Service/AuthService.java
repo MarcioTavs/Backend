@@ -39,9 +39,9 @@ public class AuthService {
     public AuthResponse registerAdmin(AdminSignUpRequest request) {
 
         
-        if (userRepository.existsByUsername(request.getUsername())) {
-            throw new RuntimeException("Username already exists");
-        }
+//        if (userRepository.existsByUsername(request.getUsername())) {
+//            throw new RuntimeException("Username already exists");
+//        }
 
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("Email already exists");
@@ -55,12 +55,12 @@ public class AuthService {
         admin.setFirstName(request.getFirstName());
         admin.setLastName(request.getLastName());
         admin.setEmail(request.getEmail());
-        admin.setUsername(request.getUsername());
+        admin.setUsername(request.getEmail());
         admin.setOrganizationName(request.getOrganizationName());
         admin.setPhoneNumber(request.getPhoneNumber());
 
         User user = new User();
-        user.setUsername(request.getUsername());
+        user.setUsername(request.getEmail());
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRole(Role.ADMIN);

@@ -7,10 +7,4 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("api/departmets")
 public class DepartmentController {
 
-
-
-
-
-
-
 }

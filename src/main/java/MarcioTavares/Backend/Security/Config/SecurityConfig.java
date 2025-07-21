@@ -57,8 +57,10 @@ public class SecurityConfig {
                 .requestMatchers("/api/entry/**").permitAll()
                 .requestMatchers("/api/public/**").permitAll()
                 .requestMatchers("/api/employee/activate-account").permitAll() //
-                 .requestMatchers("/api/employee/Profile/confirm").permitAll() //
-                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                 .requestMatchers("/api/employee/Profile/confirm").permitAll()//
+                    .requestMatchers("/api/employee/login").permitAll()
+                    .requestMatchers("/api/attendance/clockIn").hasRole("EMPLOYEE")
+                    .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .requestMatchers("/api/employee/**").hasAnyRole("EMPLOYEE", "ADMIN")
                 .anyRequest().authenticated()
             )
