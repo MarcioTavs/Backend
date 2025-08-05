@@ -20,7 +20,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
+
 
 
 @Service
@@ -62,7 +62,9 @@ public class AdminService {
         User employeeUser = new User();
         employeeUser.setEmail(emp.getEmail());
         employeeUser.setEmployee(emp);
-        employeeUser.setApikey(UUID.randomUUID().toString());
+       
+        int randomApiKey = 1000000 + new java.util.Random().nextInt(9000000);
+        employeeUser.setApikey(String.valueOf(randomApiKey));
         employeeUser.setRole(Role.EMPLOYEE);
         employeeUser.setUsername(employee.getEmail());
         employeeUser.setActive(false);

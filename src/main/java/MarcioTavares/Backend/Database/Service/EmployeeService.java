@@ -6,8 +6,6 @@ import MarcioTavares.Backend.Database.DTO.EmployeeUpdateRequest;
 import MarcioTavares.Backend.Database.Model.Employee;
 
 import MarcioTavares.Backend.Database.Repository.EmployeeRepository;
-import MarcioTavares.Backend.Security.DTO.AuthRequest;
-import MarcioTavares.Backend.Security.DTO.AuthResponse;
 import MarcioTavares.Backend.Security.Model.User;
 import MarcioTavares.Backend.Security.Repository.UserRepository;
 import MarcioTavares.Backend.Security.Utils.JwtUtil;

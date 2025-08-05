@@ -1,9 +1,9 @@
 package MarcioTavares.Backend.Database.Controller;
+import MarcioTavares.Backend.Database.DTO.ActivateAccountRequest;
 import MarcioTavares.Backend.Database.DTO.EmployeeUpdateRequest;
 import MarcioTavares.Backend.Database.Model.Employee;
 import MarcioTavares.Backend.Database.Service.EmployeeService;
-import MarcioTavares.Backend.Security.DTO.AuthRequest;
-import MarcioTavares.Backend.Security.DTO.AuthResponse;
+import org.springframework.security.access.prepost.PreAuthorize;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,15 +12,16 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/employee")
 @AllArgsConstructor
+
 public class EmployeeController {
 
     private final EmployeeService employeeService;
 
 
     @PostMapping("/activate-account")
-    public ResponseEntity<?> activateAccount(@RequestParam String email, @RequestParam String apiKey) {
+    public ResponseEntity<?> activateAccount(@RequestBody ActivateAccountRequest request) {
         try{
-            employeeService.activateAccount(email,apiKey);
+            employeeService.activateAccount(request.getEmail(), request.getApiKey());
             return ResponseEntity.ok().body("Account activated");
         }catch (Exception e){
             return ResponseEntity.badRequest().body(e.getMessage());

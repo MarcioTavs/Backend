@@ -13,6 +13,7 @@ public class AuthController {
     @Autowired
     private AuthService authService;
 
+
     @PostMapping("/admin/register")
     public ResponseEntity<?> registerAdmin(@RequestBody AdminSignUpRequest request) {
         try {

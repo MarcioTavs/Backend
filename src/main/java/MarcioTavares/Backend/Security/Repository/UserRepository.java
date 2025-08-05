@@ -9,6 +9,7 @@ import MarcioTavares.Backend.Security.Model.User;
 public interface UserRepository extends JpaRepository<User, Long> {
   Optional<User> findByUsername(String username);
   Optional<User> findByEmail(String email);
+  Optional<User> findByApikey(String apikey);
   boolean existsByUsername(String username);
   boolean existsByEmail(String email);
 }

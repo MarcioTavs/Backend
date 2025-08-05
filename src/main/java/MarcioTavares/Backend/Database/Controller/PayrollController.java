@@ -16,6 +16,7 @@ import java.time.format.DateTimeFormatter;
 @RestController
 @RequestMapping("/api/payroll")
 @AllArgsConstructor
+@PreAuthorize("hasRole('ADMIN')")
 public class PayrollController {
 
     private final PayrollReportService payrollReportService;
