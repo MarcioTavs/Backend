@@ -3,7 +3,6 @@ import MarcioTavares.Backend.Database.DTO.ActivateAccountRequest;
 import MarcioTavares.Backend.Database.DTO.EmployeeUpdateRequest;
 import MarcioTavares.Backend.Database.Model.Employee;
 import MarcioTavares.Backend.Database.Service.EmployeeService;
-import org.springframework.security.access.prepost.PreAuthorize;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
