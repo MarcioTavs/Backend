@@ -17,6 +17,7 @@ import java.util.Optional;
 @Service
 @AllArgsConstructor
 public class TimingService {
+
     private final EmployeeService employeeService;
     private final AttendanceRepository attendanceRepository;
    

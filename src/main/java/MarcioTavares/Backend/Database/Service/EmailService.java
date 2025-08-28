@@ -33,7 +33,7 @@ public class EmailService {
     }
 
     private String createActivationEmailTemplate(String email, String apikey) {
-        String activationLink = "http://localhost:3000/activationPage?email=" + email;
+        String activationLink = "http://localhost:3000/activation?email=" + email;
         return """
     <!DOCTYPE html>
     <html>
