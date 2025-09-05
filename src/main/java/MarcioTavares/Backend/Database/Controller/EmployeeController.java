@@ -39,15 +39,6 @@ public class EmployeeController {
         }
     }
 
-//    @PostMapping("/login")
-//    public ResponseEntity<?> login(@RequestBody AuthRequest authRequest) {
-//        try{
-//            AuthResponse response = employeeService.loginEmployee(authRequest);
-//            return ResponseEntity.ok(response);
-//        }catch (Exception e){
-//            return ResponseEntity.badRequest().body(e.getMessage());
-//        }
-//    }
 
 }
 
