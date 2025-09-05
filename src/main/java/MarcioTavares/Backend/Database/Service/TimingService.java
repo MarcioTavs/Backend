@@ -1,5 +1,7 @@
 package MarcioTavares.Backend.Database.Service;
 
+import MarcioTavares.Backend.Database.DTO.DailyTimesheetDTO;
+import MarcioTavares.Backend.Database.DTO.WeeklyTimesheetDTO;
 import MarcioTavares.Backend.Database.Model.AttendanceSheet;
 import MarcioTavares.Backend.Database.Model.Employee;
 import MarcioTavares.Backend.Database.Repository.AttendanceRepository;
@@ -12,11 +14,17 @@ import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.DayOfWeek;
+import java.time.format.TextStyle;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
 @AllArgsConstructor
+
 public class TimingService {
 
     private final EmployeeService employeeService;
@@ -121,5 +129,36 @@ public class TimingService {
         if (!activeSheets.isEmpty()) {
             System.out.println("Updated workTimeInMinutes for " + activeSheets.size() + " active sessions at " + now);
         }
+    }
+
+    @Transactional(readOnly = true)
+    public WeeklyTimesheetDTO getWeeklyReport(Employee employee, LocalDate weekStart) {
+        LocalDate weekEnd = weekStart.plusDays(6);
+        List<AttendanceSheet> sheets = attendanceRepository.findByEmployeeAndDateBetween(employee, weekStart, weekEnd);
+
+        Map<LocalDate, AttendanceSheet> sheetMap = new HashMap<>();
+        for (AttendanceSheet sheet : sheets) {
+            sheetMap.put(sheet.getDate(), sheet);
+        }
+
+        WeeklyTimesheetDTO dto = new WeeklyTimesheetDTO();
+
+        // Fill data for each day of the week, using 0 for missing days
+        for (int i = 0; i < 7; i++) {
+            LocalDate currentDate = weekStart.plusDays(i);
+            String dayName = currentDate.getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.ENGLISH);
+            AttendanceSheet sheet = sheetMap.get(currentDate);
+            DailyTimesheetDTO daily;
+            if (sheet != null && sheet.getClockOutTime() != null) {
+                daily = new DailyTimesheetDTO(sheet.getTotalHours(), sheet.getBreakInMinutes());
+                dto.setTotalWorkedHours(dto.getTotalWorkedHours().add(sheet.getTotalHours()));
+                dto.setTotalBreakMinutes(dto.getTotalBreakMinutes() + sheet.getBreakInMinutes());
+            } else {
+                daily = new DailyTimesheetDTO();
+            }
+            dto.getDays().put(dayName, daily);
+        }
+
+        return dto;
     }
 }

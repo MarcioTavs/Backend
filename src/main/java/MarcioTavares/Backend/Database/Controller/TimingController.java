@@ -1,5 +1,6 @@
 package MarcioTavares.Backend.Database.Controller;
 
+import MarcioTavares.Backend.Database.DTO.WeeklyTimesheetDTO;
 import MarcioTavares.Backend.Database.Model.AttendanceSheet;
 import MarcioTavares.Backend.Database.Model.Employee;
 import MarcioTavares.Backend.Database.Service.TimingService;
@@ -8,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Optional;
@@ -36,7 +38,7 @@ public class TimingController {
             return ResponseEntity.ok(new HashMap<String, Object>() {{
                 put("totalHours", att.getTotalHours());
                 put("breakInMinutes", att.getBreakInMinutes());
-                put("workTimeInMinutes", att.getWorkTimeInMinutes()); // Renamed from elapsedTimeInMinutes
+                put("workTimeInMinutes", att.getWorkTimeInMinutes());
             }});
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -71,22 +73,34 @@ public class TimingController {
             if (att.isPresent()) {
                 AttendanceSheet attendance = att.get();
                 LocalDateTime now = LocalDateTime.now();
-                attendance.calculateAndSetWorkTimeInMinutes(now); // Renamed from calculateAndSetElapsedTimeInMinutes
+                attendance.calculateAndSetWorkTimeInMinutes(now);
                 timingService.getAttendanceRepository().save(attendance);
                 return ResponseEntity.ok(new HashMap<String, Object>() {{
                     put("isClockedIn", true);
                     put("isOnBreak", attendance.getBreakStartTime() != null && attendance.getBreakEndTime() == null);
-                    put("workTimeInMinutes", attendance.getWorkTimeInMinutes()); // Renamed from elapsedTimeInMinutes
+                    put("workTimeInMinutes", attendance.getWorkTimeInMinutes());
                     put("breakInMinutes", attendance.getBreakInMinutes());
                 }});
             } else {
                 return ResponseEntity.ok(new HashMap<String, Object>() {{
                     put("isClockedIn", false);
                     put("isOnBreak", false);
-                    put("workTimeInMinutes", 0); // Renamed from elapsedTimeInMinutes
+                    put("workTimeInMinutes", 0);
                     put("breakInMinutes", 0);
                 }});
             }
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/weeklyReport")
+    public ResponseEntity<?> getWeeklyReport(@RequestParam("startDate") String startDateStr) {
+        try {
+            LocalDate startDate = LocalDate.parse(startDateStr); // Expect format like "2025-09-01"
+            Employee emp = timingService.getEmployeeService().getCurrentAuthenticatedEmployee();
+            WeeklyTimesheetDTO dto = timingService.getWeeklyReport(emp, startDate);
+            return ResponseEntity.ok(dto);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
