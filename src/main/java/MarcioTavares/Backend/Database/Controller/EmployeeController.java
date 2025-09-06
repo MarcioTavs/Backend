@@ -3,7 +3,6 @@ import MarcioTavares.Backend.Database.DTO.ActivateAccountRequest;
 import MarcioTavares.Backend.Database.DTO.EmployeeUpdateRequest;
 import MarcioTavares.Backend.Database.Model.Employee;
 import MarcioTavares.Backend.Database.Service.EmployeeService;
-import org.springframework.security.access.prepost.PreAuthorize;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -40,15 +39,6 @@ public class EmployeeController {
         }
     }
 
-//    @PostMapping("/login")
-//    public ResponseEntity<?> login(@RequestBody AuthRequest authRequest) {
-//        try{
-//            AuthResponse response = employeeService.loginEmployee(authRequest);
-//            return ResponseEntity.ok(response);
-//        }catch (Exception e){
-//            return ResponseEntity.badRequest().body(e.getMessage());
-//        }
-//    }
 
 }
 

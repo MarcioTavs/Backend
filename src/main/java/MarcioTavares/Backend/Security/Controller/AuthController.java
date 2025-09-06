@@ -4,6 +4,7 @@ import MarcioTavares.Backend.Security.DTO.*;
 import MarcioTavares.Backend.Security.Service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -14,6 +15,7 @@ public class AuthController {
     private AuthService authService;
 
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/admin/register")
     public ResponseEntity<?> registerAdmin(@RequestBody AdminSignUpRequest request) {
         try {
@@ -33,4 +35,7 @@ public class AuthController {
             return ResponseEntity.badRequest().body(new AuthResponse(null, null, null, e.getMessage()));
         }
     }
+
+
+
 } 

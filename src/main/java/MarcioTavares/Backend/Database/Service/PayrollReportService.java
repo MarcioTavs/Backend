@@ -173,7 +173,9 @@ public class PayrollReportService {
         public void setTotalHours(BigDecimal totalHours) { this.totalHours = totalHours; }
 
         public BigDecimal getRegularHours() { return regularHours; }
-        public void setRegularHours(BigDecimal regularHours) { this.regularHours = regularHours; }
+        public void setRegularHours(BigDecimal regularHours) {
+            this.regularHours = regularHours;
+        }
 
         public BigDecimal getOvertimeHours() { return overtimeHours; }
         public void setOvertimeHours(BigDecimal overtimeHours) { this.overtimeHours = overtimeHours; }

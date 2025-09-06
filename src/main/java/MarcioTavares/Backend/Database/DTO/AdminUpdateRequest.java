@@ -1,8 +1,12 @@
 package MarcioTavares.Backend.Database.DTO;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class AdminUpdateRequest {
     private String organizationName;
     private String firstName;
