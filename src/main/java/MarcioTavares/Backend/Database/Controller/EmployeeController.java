@@ -40,5 +40,24 @@ public class EmployeeController {
     }
 
 
+
+    @PutMapping("/update")
+    public ResponseEntity<?> updateEmployee(@RequestBody EmployeeUpdateRequest employeeUpdateRequest) {
+        try {
+            Employee currentEmployee = employeeService.getCurrentAuthenticatedEmployee();
+
+            Employee updatedEmployee = employeeService.updateEmployeeData(
+                    employeeUpdateRequest,
+                    currentEmployee.getEmail()
+            );
+
+            return ResponseEntity.ok(updatedEmployee);
+        } catch (Exception e) {
+            System.out.printf("Error updating employee: %s\n", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+
 }
 

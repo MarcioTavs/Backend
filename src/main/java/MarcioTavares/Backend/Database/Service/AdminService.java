@@ -83,6 +83,8 @@ public class AdminService {
 
         Admin admin = adminRepository.findByEmail(adminEmail)
             .orElseThrow(() -> new IllegalArgumentException("Admin not found"));
+
+
         
 
         if (adminUpdate.getOrganizationName() != null) {
@@ -110,13 +112,7 @@ public class AdminService {
             user.setEmail(adminUpdate.getEmail());
             user.setUsername(adminUpdate.getEmail());
         }
-//
-//        if (adminUpdate.getFirstName() != null || adminUpdate.getLastName() != null) {
-//            String newUsername = (adminUpdate.getFirstName() != null ? adminUpdate.getFirstName() : admin.getFirstName()) +
-//                               " " + (adminUpdate.getLastName() != null ? adminUpdate.getLastName() : admin.getLastName());
-//            user.setUsername(newUsername);
-//        }
-//
+
 
         if (adminUpdate.getPassword() != null && 
             adminUpdate.getConfirmPassword() != null && 
