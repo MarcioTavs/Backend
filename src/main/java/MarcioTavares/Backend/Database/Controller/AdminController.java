@@ -1,21 +1,21 @@
 package MarcioTavares.Backend.Database.Controller;
 
-import MarcioTavares.Backend.Database.DTO.AdminUpdateRequest;
-import MarcioTavares.Backend.Database.DTO.DepartmentDTO;
-import MarcioTavares.Backend.Database.DTO.DepartmentUpdateRequest;
-import MarcioTavares.Backend.Database.DTO.EmployeeDTO;
+
+import MarcioTavares.Backend.Database.DTO.*;
 import MarcioTavares.Backend.Database.Model.Admin;
 import MarcioTavares.Backend.Database.Model.Department;
 import MarcioTavares.Backend.Database.Service.AdminService;
 import MarcioTavares.Backend.Database.Service.DepartmentService;
 import MarcioTavares.Backend.Database.Model.Employee;
 import MarcioTavares.Backend.Database.Service.EmployeeService;
+import MarcioTavares.Backend.Database.Service.TimingService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 
@@ -27,6 +27,7 @@ public class AdminController {
     private final AdminService adminService;
     private final DepartmentService departmentService;
     private final EmployeeService employeeService;
+    private final TimingService timingService;
 
 
 
@@ -45,18 +46,18 @@ public class AdminController {
     }
 
 
-    @PutMapping("/update-department")
-    public ResponseEntity<?> updateDepartment(@RequestBody DepartmentUpdateRequest departmentUpdateRequest, @RequestParam String departId) {
-        try{
-            Department updatedDepartment =departmentService.updateDepartment(departmentUpdateRequest , departId);
-            return ResponseEntity.ok(updatedDepartment);
-
-        }catch (Exception e){
-            System.out.printf("Error: %s\n",e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-        }
-
-    }
+//    @PutMapping("/update-department")
+//    public ResponseEntity<?> updateDepartment(@RequestBody DepartmentUpdateRequest departmentUpdateRequest, @RequestParam String departId) {
+//        try{
+//            Department updatedDepartment =departmentService.updateDepartment(departmentUpdateRequest , departId);
+//            return ResponseEntity.ok(updatedDepartment);
+//
+//        }catch (Exception e){
+//            System.out.printf("Error: %s\n",e.getMessage());
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+//        }
+//
+//    }
 
 
     @GetMapping("/get-all-departments")
@@ -120,14 +121,28 @@ public class AdminController {
     }
 
 
-    @PutMapping("/update-admin")
-    public ResponseEntity<?> updateAdmin(@RequestBody AdminUpdateRequest adminUpdateRequest , String adminEmail) {
-        try{
-            Admin updateAdmin = adminService.updateAdminData(adminUpdateRequest, adminEmail);
-            return ResponseEntity.ok().body(updateAdmin);
+    //    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/update-details")
+    public ResponseEntity<?> updateAdminDetails(@RequestBody AdminDetailsDTO adminDetailsDTO) {
+        try {
+            AdminDetailsDTO updatedAdminDTO = adminService.updateAdminDetails(adminDetailsDTO);
+            return ResponseEntity.ok(updatedAdminDTO);
+        } catch (Exception e) {
+            System.out.printf("Error updating admin details: %s\n", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
 
-        }catch (Exception e){
-            System.out.printf("Error: %s\n",e.getMessage());
+    // New endpoint for updating admin password
+    @PreAuthorize("hasRole('ADMIN')")  // Ensure only admins can access
+    @PutMapping("/update-password")
+    public ResponseEntity<?> updateAdminPassword(@RequestBody PasswordUpdateDTO passwordUpdateDTO) {
+        try {
+            adminService.updateAdminPassword(passwordUpdateDTO);
+            return ResponseEntity.ok("Password updated successfully");
+        } catch (Exception e) {
+            System.out.printf("Error updating password: %s\n", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
@@ -140,6 +155,33 @@ public class AdminController {
             return ResponseEntity.ok(employees);
         }catch (Exception e){
             return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/get-loggedin-employees-today")
+    public ResponseEntity<List<EmployeeAttendanceDTO>> getLoggedInEmployeesToday() {
+        try {
+            List<EmployeeAttendanceDTO> list = adminService.getTodaysEmployeeAttendance();
+            return ResponseEntity.ok(list);
+        } catch (Exception e) {
+            System.out.printf("Error: %s\n", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/get-all-employees-weekly-timesheet")
+    public ResponseEntity<?> getAllEmployeesWeeklyTimesheet(@RequestParam String weekStart) {
+        try {
+            LocalDate startDate = LocalDate.parse(weekStart);
+            List<EmployeeWeeklyTimesheetDTO> timesheets = timingService.getAllEmployeesWeeklyReport(startDate);
+            return ResponseEntity.ok(timesheets);
+        } catch (Exception e) {
+            System.out.printf("Error fetching weekly timesheets: %s\n", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
 

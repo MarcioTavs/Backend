@@ -1,6 +1,8 @@
 package MarcioTavares.Backend.Database.Controller;
 import MarcioTavares.Backend.Database.DTO.ActivateAccountRequest;
+import MarcioTavares.Backend.Database.DTO.EmpDetailsDTO;
 import MarcioTavares.Backend.Database.DTO.EmployeeUpdateRequest;
+import MarcioTavares.Backend.Database.DTO.PasswordUpdateDTO;
 import MarcioTavares.Backend.Database.Model.Employee;
 import MarcioTavares.Backend.Database.Service.EmployeeService;
 import lombok.AllArgsConstructor;
@@ -41,22 +43,33 @@ public class EmployeeController {
 
 
 
-    @PutMapping("/update")
-    public ResponseEntity<?> updateEmployee(@RequestBody EmployeeUpdateRequest employeeUpdateRequest) {
+    @PutMapping("/update-details")
+    public ResponseEntity<?> updateEmployeeDetails(@RequestBody EmpDetailsDTO empDetailsDTO) {
         try {
             Employee currentEmployee = employeeService.getCurrentAuthenticatedEmployee();
-
-            Employee updatedEmployee = employeeService.updateEmployeeData(
-                    employeeUpdateRequest,
-                    currentEmployee.getEmail()
-            );
-
+            Employee updatedEmployee = employeeService.updateEmployeeDetails(empDetailsDTO, currentEmployee.getEmail());
             return ResponseEntity.ok(updatedEmployee);
         } catch (Exception e) {
-            System.out.printf("Error updating employee: %s\n", e.getMessage());
+            System.out.printf("Error updating employee details: %s\n", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
+
+
+    @PutMapping("/update-password")
+    public ResponseEntity<?> updateEmployeePassword(@RequestBody PasswordUpdateDTO passwordUpdateDTO) {
+        try {
+            Employee currentEmployee = employeeService.getCurrentAuthenticatedEmployee();
+            employeeService.updateEmployeePassword(passwordUpdateDTO, currentEmployee.getEmail());
+            return ResponseEntity.ok().body("Password updated successfully");
+        } catch (Exception e) {
+            System.out.printf("Error updating password: %s\n", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+
+
 
 
 }

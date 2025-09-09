@@ -1,8 +1,10 @@
 package MarcioTavares.Backend.Database.Service;
 
 
+import MarcioTavares.Backend.Database.DTO.EmpDetailsDTO;
 import MarcioTavares.Backend.Database.DTO.EmployeeUpdateRequest;
 
+import MarcioTavares.Backend.Database.DTO.PasswordUpdateDTO;
 import MarcioTavares.Backend.Database.Model.Employee;
 
 import MarcioTavares.Backend.Database.Repository.EmployeeRepository;
@@ -39,6 +41,31 @@ public class EmployeeService {
         return employeeRepository.findAll();
     }
 
+    private UserDetails createUserDetails(User user) {
+        return new org.springframework.security.core.userdetails.User(
+                user.getUsername(),
+                user.getPassword(),
+                user.isActive(),
+                true,
+                true,
+                true,
+                java.util.Collections.singleton(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_" + user.getRole().name()))
+        );
+    }
+
+
+
+    public void activateAccount(String employeeEmail,String apiKey) {
+        User employee = userRepository.findByEmail(employeeEmail).orElseThrow(() -> new RuntimeException("Employee not found"));
+
+        if(!Objects.equals(employee.getApikey(), apiKey)) {
+            throw new IllegalArgumentException("Invalid API key provided");
+
+        }
+
+        employee.setActive(true);
+        userRepository.save(employee);
+    }
 
     @Transactional
     public Employee updateEmployeeData(EmployeeUpdateRequest employeeUpdate, String email) {
@@ -73,17 +100,7 @@ public class EmployeeService {
         return emp;
     }
 
-    public void activateAccount(String employeeEmail,String apiKey) {
-        User employee = userRepository.findByEmail(employeeEmail).orElseThrow(() -> new RuntimeException("Employee not found"));
 
-        if(!Objects.equals(employee.getApikey(), apiKey)) {
-            throw new IllegalArgumentException("Invalid API key provided");
-
-        }
-
-        employee.setActive(true);
-        userRepository.save(employee);
-    }
 
 
     public Employee getCurrentAuthenticatedEmployee() {
@@ -105,19 +122,43 @@ public class EmployeeService {
 
 
 
-    private UserDetails createUserDetails(User user) {
-        return new org.springframework.security.core.userdetails.User(
-                user.getUsername(),
-                user.getPassword(),
-                user.isActive(),
-                true,
-                true,
-                true,
-                java.util.Collections.singleton(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_" + user.getRole().name()))
-        );
+    //para atualizar somemente o nome e last nome
+    @Transactional
+    public Employee updateEmployeeDetails(EmpDetailsDTO empDetailsDTO, String email) {
+        Employee emp = employeeRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Employee not found"));
+
+        if (empDetailsDTO.getFirstName() != null) {
+            emp.setFirstName(empDetailsDTO.getFirstName());
+        }
+        if (empDetailsDTO.getLastName() != null) {
+            emp.setLastName(empDetailsDTO.getLastName());
+        }
+        if (empDetailsDTO.getPhoneNumber() != null) {
+            emp.setPhoneNumber(empDetailsDTO.getPhoneNumber());
+        }
+
+        employeeRepository.save(emp);
+        return emp;
     }
 
 
+    //para atualizar somente o password
+
+    @Transactional
+    public void updateEmployeePassword(PasswordUpdateDTO passwordUpdateDTO, String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (passwordUpdateDTO.getNewPassword() != null &&
+                passwordUpdateDTO.getConfirmPassword() != null &&
+                passwordUpdateDTO.getNewPassword().equals(passwordUpdateDTO.getConfirmPassword())) {
+            user.setPassword(passwordEncoder.encode(passwordUpdateDTO.getNewPassword()));
+            userRepository.save(user);
+        } else {
+            throw new RuntimeException("New password and confirm password must match");
+        }
+    }
 
 
 }

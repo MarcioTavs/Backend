@@ -36,11 +36,9 @@ public class AuthService {
     private AuthenticationManager authenticationManager;
 
     public AuthResponse registerAdmin(AdminSignUpRequest request) {
-
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("Email already exists");
         }
-
         if (!request.getPassword().equals(request.getConfirmPassword())) {
             throw new RuntimeException("Password and confirm password must match");
         }
@@ -62,8 +60,10 @@ public class AuthService {
         user.setCreatedAt(LocalDateTime.now());
         user.setAdmin(admin);
 
-        adminRepository.save(admin);
-        userRepository.save(user);
+        Admin savedAdmin = adminRepository.save(admin);
+        System.out.println("Saved admin: " + savedAdmin.getEmail());
+        User savedUser = userRepository.save(user);
+        System.out.println("Saved user: " + savedUser.getUsername() + ", admin ID: " + (savedUser.getAdmin() != null ? savedUser.getAdmin().getId() : "null"));
 
         String token = jwtUtil.generateToken(createUserDetails(user));
 

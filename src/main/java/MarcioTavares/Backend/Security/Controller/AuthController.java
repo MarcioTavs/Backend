@@ -21,7 +21,7 @@ public class AuthController {
     private UserRepository UserRepository;
 
 
-    @PreAuthorize("hasRole('ADMIN')")
+
     @PostMapping("/admin/register")
     public ResponseEntity<?> registerAdmin(@RequestBody AdminSignUpRequest request) {
         try {

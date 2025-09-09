@@ -1,6 +1,7 @@
 package MarcioTavares.Backend.Database.Service;
 
 import MarcioTavares.Backend.Database.DTO.DailyTimesheetDTO;
+import MarcioTavares.Backend.Database.DTO.EmployeeWeeklyTimesheetDTO;
 import MarcioTavares.Backend.Database.DTO.WeeklyTimesheetDTO;
 import MarcioTavares.Backend.Database.Model.AttendanceSheet;
 import MarcioTavares.Backend.Database.Model.Employee;
@@ -14,17 +15,11 @@ import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.DayOfWeek;
 import java.time.format.TextStyle;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @AllArgsConstructor
-
 public class TimingService {
 
     private final EmployeeService employeeService;
@@ -160,5 +155,25 @@ public class TimingService {
         }
 
         return dto;
+    }
+
+    @Transactional(readOnly = true)
+    public List<EmployeeWeeklyTimesheetDTO> getAllEmployeesWeeklyReport(LocalDate weekStart) {
+        List<Employee> employees = employeeService.getAllEmployees();
+        List<EmployeeWeeklyTimesheetDTO> timesheets = new ArrayList<>();
+
+        for (Employee emp : employees) {
+            WeeklyTimesheetDTO weeklyDTO = getWeeklyReport(emp, weekStart);
+            EmployeeWeeklyTimesheetDTO employeeTimesheet = new EmployeeWeeklyTimesheetDTO(
+                    emp.getEmployeeId(),
+                    emp.getFirstName(),
+                    emp.getLastName(),
+                    emp.getEmail(),
+                    weeklyDTO
+            );
+            timesheets.add(employeeTimesheet);
+        }
+
+        return timesheets;
     }
 }

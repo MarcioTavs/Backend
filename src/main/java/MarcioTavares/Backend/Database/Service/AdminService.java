@@ -1,24 +1,39 @@
 package MarcioTavares.Backend.Database.Service;
 
 
-import MarcioTavares.Backend.Database.DTO.AdminUpdateRequest;
+
+import MarcioTavares.Backend.Database.DTO.EmployeeAttendanceDTO;
 import MarcioTavares.Backend.Database.Model.Admin;
+import MarcioTavares.Backend.Database.Model.AttendanceSheet;
 import MarcioTavares.Backend.Database.Model.Department;
 import MarcioTavares.Backend.Database.Model.Employee;
 import MarcioTavares.Backend.Database.Repository.AdminRepository;
 
+import MarcioTavares.Backend.Database.DTO.EmployeeAttendanceDTO;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+
+import MarcioTavares.Backend.Database.Repository.AttendanceRepository;
 import MarcioTavares.Backend.Database.Repository.DepartmentRepository;
 import MarcioTavares.Backend.Database.Repository.EmployeeRepository;
 
 import MarcioTavares.Backend.Security.Model.Role;
 import MarcioTavares.Backend.Security.Model.User;
 import MarcioTavares.Backend.Security.Repository.UserRepository;
+
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import MarcioTavares.Backend.Database.DTO.AdminDetailsDTO;
+import MarcioTavares.Backend.Database.DTO.PasswordUpdateDTO;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 
@@ -32,6 +47,7 @@ public class AdminService {
     private final UserRepository userRepository;
     private final DepartmentRepository departmentRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AttendanceRepository attendanceRepository;
 
 
     public void createAdmin(Admin admin){
@@ -78,56 +94,102 @@ public class AdminService {
 
     }
 
+
+
     @Transactional
-    public Admin updateAdminData(AdminUpdateRequest adminUpdate, String adminEmail) {
+    public AdminDetailsDTO updateAdminDetails(AdminDetailsDTO adminDetailsDTO) {
+        Admin admin = getCurrentAuthenticatedAdmin();
 
-        Admin admin = adminRepository.findByEmail(adminEmail)
-            .orElseThrow(() -> new IllegalArgumentException("Admin not found"));
-
-
-        
-
-        if (adminUpdate.getOrganizationName() != null) {
-            admin.setOrganizationName(adminUpdate.getOrganizationName());
+        // Update fields if provided in the DTO
+        if (adminDetailsDTO.getOrganizationName() != null) {
+            admin.setOrganizationName(adminDetailsDTO.getOrganizationName());
         }
-        if (adminUpdate.getFirstName() != null) {
-            admin.setFirstName(adminUpdate.getFirstName());
+        if (adminDetailsDTO.getFirstName() != null) {
+            admin.setFirstName(adminDetailsDTO.getFirstName());
         }
-        if (adminUpdate.getLastName() != null) {
-            admin.setLastName(adminUpdate.getLastName());
+        if (adminDetailsDTO.getLastName() != null) {
+            admin.setLastName(adminDetailsDTO.getLastName());
         }
-        if (adminUpdate.getPhoneNumber() != null) {
-            admin.setPhoneNumber(adminUpdate.getPhoneNumber());
-        }
-        
-
-        User user = userRepository.findByEmail(adminEmail)
-            .orElseThrow(() -> new IllegalArgumentException("User not found"));
-
-        if (adminUpdate.getEmail() != null && !adminUpdate.getEmail().equals(adminEmail)) {
-            if (userRepository.existsByEmail(adminUpdate.getEmail())) {
-                throw new RuntimeException("Email already exists");
-            }
-            admin.setEmail(adminUpdate.getEmail());
-            user.setEmail(adminUpdate.getEmail());
-            user.setUsername(adminUpdate.getEmail());
+        if (adminDetailsDTO.getPhoneNumber() != null) {
+            admin.setPhoneNumber(adminDetailsDTO.getPhoneNumber());
         }
 
-
-        if (adminUpdate.getPassword() != null && 
-            adminUpdate.getConfirmPassword() != null && 
-            adminUpdate.getPassword().equals(adminUpdate.getConfirmPassword())) {
-            user.setPassword(passwordEncoder.encode(adminUpdate.getPassword()));
-        } else if (adminUpdate.getPassword() != null || adminUpdate.getConfirmPassword() != null) {
-            throw new RuntimeException("Password and confirm password must match");
-        }
-
+        // Save the updated admin entity
         adminRepository.save(admin);
-        userRepository.save(user);
-        
-        return admin;
+
+        // Return a DTO with the updated values
+        return new AdminDetailsDTO(
+                admin.getOrganizationName(),
+                admin.getFirstName(),
+                admin.getLastName(),
+                admin.getPhoneNumber()
+        );
     }
 
+    public Admin getCurrentAuthenticatedAdmin() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new RuntimeException("User must be logged in");
+        }
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof UserDetails userDetails) {
+            User user = userRepository.findByUsername(userDetails.getUsername())
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+            if (user.getAdmin() == null) {
+                throw new RuntimeException("Authenticated user is not an admin");
+            }
+            return user.getAdmin();
+        }
+        throw new RuntimeException("User must be logged in");
+    }
+
+    // New method to update admin password
+    @Transactional
+    public void updateAdminPassword(PasswordUpdateDTO passwordUpdateDTO) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new RuntimeException("User must be logged in");
+        }
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof UserDetails userDetails) {
+            User user = userRepository.findByUsername(userDetails.getUsername())
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+
+            if (passwordUpdateDTO.getNewPassword() != null &&
+                    passwordUpdateDTO.getConfirmPassword() != null &&
+                    passwordUpdateDTO.getNewPassword().equals(passwordUpdateDTO.getConfirmPassword())) {
+                user.setPassword(passwordEncoder.encode(passwordUpdateDTO.getNewPassword()));
+                userRepository.save(user);
+            } else {
+                throw new RuntimeException("New password and confirm password must match");
+            }
+        } else {
+            throw new RuntimeException("User must be logged in");
+        }
+    }
+
+
+
+    public List<EmployeeAttendanceDTO> getTodaysEmployeeAttendance() {
+        LocalDate today = LocalDate.now();
+        List<AttendanceSheet> attendanceSheets = attendanceRepository.findByDate(today);  // Assumes this method exists in AttendanceRepository; add it if not (see note below)
+        List<EmployeeAttendanceDTO> dtoList = new ArrayList<>();
+        for (AttendanceSheet sheet : attendanceSheets) {
+            if (sheet.getClockInTime() != null) {  // Only include if they clocked in
+                Employee emp = sheet.getEmployee();
+                EmployeeAttendanceDTO dto = new EmployeeAttendanceDTO(
+                        emp.getEmployeeId(),
+                        emp.getFirstName(),
+                        emp.getLastName(),
+                        emp.getEmail(),
+                        sheet.getClockInTime(),
+                        sheet.getClockOutTime()  // Will be null if not clocked out yet
+                );
+                dtoList.add(dto);
+            }
+        }
+        return dtoList;
+    }
 
 
     }
