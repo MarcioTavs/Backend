@@ -55,6 +55,20 @@ public class AdminService {
     }
 
 
+
+    @Transactional
+    public AdminDetailsDTO getAdminProfile() {
+        Admin admin = getCurrentAuthenticatedAdmin();
+        return new AdminDetailsDTO(
+                admin.getOrganizationName(),
+                admin.getFirstName(),
+                admin.getLastName(),
+                admin.getPhoneNumber()
+        );
+    }
+
+
+
     @Transactional
     public Employee addEmployeeToDepartment(Employee employee, String departmentId) {
         Department optionalDepartment = departmentRepository.findByDepartmentId(departmentId);
@@ -183,7 +197,7 @@ public class AdminService {
                         emp.getLastName(),
                         emp.getEmail(),
                         sheet.getClockInTime(),
-                        sheet.getClockOutTime()  // Will be null if not clocked out yet
+                        sheet.getClockOutTime()
                 );
                 dtoList.add(dto);
             }

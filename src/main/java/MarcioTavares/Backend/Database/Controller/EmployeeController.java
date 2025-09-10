@@ -1,13 +1,11 @@
 package MarcioTavares.Backend.Database.Controller;
-import MarcioTavares.Backend.Database.DTO.ActivateAccountRequest;
-import MarcioTavares.Backend.Database.DTO.EmpDetailsDTO;
-import MarcioTavares.Backend.Database.DTO.EmployeeUpdateRequest;
-import MarcioTavares.Backend.Database.DTO.PasswordUpdateDTO;
+import MarcioTavares.Backend.Database.DTO.*;
 import MarcioTavares.Backend.Database.Model.Employee;
 import MarcioTavares.Backend.Database.Service.EmployeeService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -17,6 +15,21 @@ import org.springframework.web.bind.annotation.*;
 public class EmployeeController {
 
     private final EmployeeService employeeService;
+
+
+
+    @PreAuthorize("hasRole('EMPLOYEE')")
+    @GetMapping("/profile")
+    public ResponseEntity<EmployeeDTO> getEmployeeProfile() {
+        try {
+            EmployeeDTO profile = employeeService.getEmployeeProfile();
+            return ResponseEntity.ok(profile);
+        } catch (Exception e) {
+            System.out.printf("Error fetching employee profile: %s\n", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
 
 
     @PostMapping("/activate-account")

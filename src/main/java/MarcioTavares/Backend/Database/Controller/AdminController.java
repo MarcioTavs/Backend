@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import MarcioTavares.Backend.Database.DTO.DepartmentDTO;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -31,6 +32,22 @@ public class AdminController {
 
 
 
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/profile")
+    public ResponseEntity<AdminDetailsDTO> getAdminProfile() {
+        try {
+            AdminDetailsDTO profile = adminService.getAdminProfile();
+            return ResponseEntity.ok(profile);
+        } catch (Exception e) {
+            System.out.printf("Error fetching admin profile: %s\n", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
+
+
+
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/add-department")
     public ResponseEntity<?> createDepartment(@RequestBody DepartmentDTO departmentDTO) {
@@ -45,11 +62,11 @@ public class AdminController {
         }
     }
 
-
+//
 //    @PutMapping("/update-department")
-//    public ResponseEntity<?> updateDepartment(@RequestBody DepartmentUpdateRequest departmentUpdateRequest, @RequestParam String departId) {
+//    public ResponseEntity<?> updateDepartment(@RequestBody DepartmentDTO departmentDTO, @RequestParam String departId) {
 //        try{
-//            Department updatedDepartment =departmentService.updateDepartment(departmentUpdateRequest , departId);
+//            Department updatedDepartment =departmentService.updateDepartment(departmentDTO , departId);
 //            return ResponseEntity.ok(updatedDepartment);
 //
 //        }catch (Exception e){
@@ -184,5 +201,9 @@ public class AdminController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
+
+
+
+
 
 }

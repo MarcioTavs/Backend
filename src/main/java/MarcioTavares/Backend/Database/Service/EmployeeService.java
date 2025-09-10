@@ -1,10 +1,8 @@
 package MarcioTavares.Backend.Database.Service;
 
 
-import MarcioTavares.Backend.Database.DTO.EmpDetailsDTO;
-import MarcioTavares.Backend.Database.DTO.EmployeeUpdateRequest;
+import MarcioTavares.Backend.Database.DTO.*;
 
-import MarcioTavares.Backend.Database.DTO.PasswordUpdateDTO;
 import MarcioTavares.Backend.Database.Model.Employee;
 
 import MarcioTavares.Backend.Database.Repository.EmployeeRepository;
@@ -37,9 +35,37 @@ public class EmployeeService {
     private JwtUtil jwtUtil;
 
 
+
+
+
+
+
+
     public List<Employee> getAllEmployees() {
         return employeeRepository.findAll();
     }
+
+
+
+
+    @Transactional
+    public EmployeeDTO getEmployeeProfile() {
+        Employee emp = getCurrentAuthenticatedEmployee();
+        DepartmentDTO deptDTO = new DepartmentDTO();
+        deptDTO.setDepartmentId(emp.getDepartment().getDepartmentId());
+        deptDTO.setDepartmentName(emp.getDepartmentName());
+
+        return new EmployeeDTO(
+                emp.getEmployeeId(),
+                emp.getFirstName(),
+                emp.getLastName(),
+                emp.getProject(),
+                emp.getPhoneNumber(),
+                emp.getEmail(),
+                deptDTO
+        );
+    }
+
 
     private UserDetails createUserDetails(User user) {
         return new org.springframework.security.core.userdetails.User(
