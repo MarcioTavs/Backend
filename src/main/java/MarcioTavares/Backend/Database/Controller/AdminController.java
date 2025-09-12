@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import MarcioTavares.Backend.Database.DTO.DepartmentDTO;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -62,19 +63,19 @@ public class AdminController {
         }
     }
 
-//
-//    @PutMapping("/update-department")
-//    public ResponseEntity<?> updateDepartment(@RequestBody DepartmentDTO departmentDTO, @RequestParam String departId) {
-//        try{
-//            Department updatedDepartment =departmentService.updateDepartment(departmentDTO , departId);
-//            return ResponseEntity.ok(updatedDepartment);
-//
-//        }catch (Exception e){
-//            System.out.printf("Error: %s\n",e.getMessage());
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-//        }
-//
-//    }
+
+    @PutMapping("/update-department")
+    public ResponseEntity<?> updateDepartment(@RequestBody DepartmentDTO departmentDTO, @RequestParam String departId) {
+        try{
+            Department updatedDepartment =departmentService.updateDepartment(departmentDTO , departId);
+            return ResponseEntity.ok(updatedDepartment);
+
+        }catch (Exception e){
+            System.out.printf("Error: %s\n",e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+
+    }
 
 
     @GetMapping("/get-all-departments")
@@ -199,6 +200,19 @@ public class AdminController {
         } catch (Exception e) {
             System.out.printf("Error fetching weekly timesheets: %s\n", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/get-all-employees-status")
+    public ResponseEntity<List<EmployeeStatusDTO>> getAllEmployeesStatus() {
+        try {
+            List<EmployeeStatusDTO> statuses = adminService.getAllEmployeesStatus();
+            return ResponseEntity.ok(statuses);
+        } catch (Exception e) {
+            System.out.printf("Error fetching employee statuses: %s\n", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ArrayList<>());
         }
     }
 

@@ -1,42 +1,34 @@
 package MarcioTavares.Backend.Database.Service;
 
-
-
 import MarcioTavares.Backend.Database.DTO.EmployeeAttendanceDTO;
 import MarcioTavares.Backend.Database.Model.Admin;
 import MarcioTavares.Backend.Database.Model.AttendanceSheet;
 import MarcioTavares.Backend.Database.Model.Department;
 import MarcioTavares.Backend.Database.Model.Employee;
 import MarcioTavares.Backend.Database.Repository.AdminRepository;
-
 import MarcioTavares.Backend.Database.DTO.EmployeeAttendanceDTO;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-
 import MarcioTavares.Backend.Database.Repository.AttendanceRepository;
 import MarcioTavares.Backend.Database.Repository.DepartmentRepository;
 import MarcioTavares.Backend.Database.Repository.EmployeeRepository;
-
 import MarcioTavares.Backend.Security.Model.Role;
 import MarcioTavares.Backend.Security.Model.User;
 import MarcioTavares.Backend.Security.Repository.UserRepository;
-
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import MarcioTavares.Backend.Database.DTO.AdminDetailsDTO;
 import MarcioTavares.Backend.Database.DTO.PasswordUpdateDTO;
-import jakarta.transaction.Transactional;
+import MarcioTavares.Backend.Database.DTO.EmployeeStatusDTO;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.AllArgsConstructor;
-
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-
-
+import java.util.Optional;
 
 @Service
 @AllArgsConstructor
@@ -49,12 +41,9 @@ public class AdminService {
     private final PasswordEncoder passwordEncoder;
     private final AttendanceRepository attendanceRepository;
 
-
     public void createAdmin(Admin admin){
         adminRepository.save(admin);
     }
-
-
 
     @Transactional
     public AdminDetailsDTO getAdminProfile() {
@@ -67,15 +56,12 @@ public class AdminService {
         );
     }
 
-
-
     @Transactional
     public Employee addEmployeeToDepartment(Employee employee, String departmentId) {
         Department optionalDepartment = departmentRepository.findByDepartmentId(departmentId);
         if(optionalDepartment == null) {
             throw new IllegalArgumentException("Department not found");
         }
-
 
         Employee emp = new Employee();
         emp.setDepartment(optionalDepartment);
@@ -92,7 +78,7 @@ public class AdminService {
         User employeeUser = new User();
         employeeUser.setEmail(emp.getEmail());
         employeeUser.setEmployee(emp);
-       
+
         int randomApiKey = 1000000 + new java.util.Random().nextInt(9000000);
         employeeUser.setApikey(String.valueOf(randomApiKey));
         employeeUser.setRole(Role.EMPLOYEE);
@@ -105,10 +91,7 @@ public class AdminService {
         emailService.sendActivationMail(employee.getEmail(),employeeUser.getApikey());
 
         return emp;
-
     }
-
-
 
     @Transactional
     public AdminDetailsDTO updateAdminDetails(AdminDetailsDTO adminDetailsDTO) {
@@ -182,8 +165,6 @@ public class AdminService {
         }
     }
 
-
-
     public List<EmployeeAttendanceDTO> getTodaysEmployeeAttendance() {
         LocalDate today = LocalDate.now();
         List<AttendanceSheet> attendanceSheets = attendanceRepository.findByDate(today);  // Assumes this method exists in AttendanceRepository; add it if not (see note below)
@@ -205,9 +186,30 @@ public class AdminService {
         return dtoList;
     }
 
-
+    @Transactional(readOnly = true)
+    public List<EmployeeStatusDTO> getAllEmployeesStatus() {
+        List<Employee> employees = employeeRepository.findAll();
+        List<EmployeeStatusDTO> statuses = new ArrayList<>();
+        for (Employee emp : employees) {
+            Optional<AttendanceSheet> attOpt = attendanceRepository.findByEmployeeAndClockOutTimeIsNull(emp);
+            String status = "inactive";
+            if (attOpt.isPresent()) {
+                AttendanceSheet att = attOpt.get();
+                if (att.getBreakStartTime() != null && att.getBreakEndTime() == null) {
+                    status = "paused";
+                } else {
+                    status = "active";
+                }
+            }
+            EmployeeStatusDTO dto = new EmployeeStatusDTO(
+                    emp.getEmployeeId(),
+                    emp.getFirstName(),
+                    emp.getLastName(),
+                    emp.getEmail(),
+                    status
+            );
+            statuses.add(dto);
+        }
+        return statuses;
     }
-
-
-
-
+}
