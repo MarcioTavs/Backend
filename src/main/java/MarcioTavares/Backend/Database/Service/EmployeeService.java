@@ -12,7 +12,6 @@ import MarcioTavares.Backend.Security.Utils.JwtUtil;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -36,14 +35,10 @@ public class EmployeeService {
 
 
 
-
-
-
-
-
     public List<Employee> getAllEmployees() {
         return employeeRepository.findAll();
     }
+
 
 
 

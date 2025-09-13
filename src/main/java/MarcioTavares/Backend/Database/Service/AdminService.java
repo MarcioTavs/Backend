@@ -192,13 +192,13 @@ public class AdminService {
         List<EmployeeStatusDTO> statuses = new ArrayList<>();
         for (Employee emp : employees) {
             Optional<AttendanceSheet> attOpt = attendanceRepository.findByEmployeeAndClockOutTimeIsNull(emp);
-            String status = "inactive";
+            String status = "Inactive";
             if (attOpt.isPresent()) {
                 AttendanceSheet att = attOpt.get();
                 if (att.getBreakStartTime() != null && att.getBreakEndTime() == null) {
-                    status = "paused";
+                    status = "Break";
                 } else {
-                    status = "active";
+                    status = "Active";
                 }
             }
             EmployeeStatusDTO dto = new EmployeeStatusDTO(

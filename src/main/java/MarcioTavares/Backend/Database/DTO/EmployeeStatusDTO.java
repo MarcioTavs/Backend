@@ -13,5 +13,5 @@ public class EmployeeStatusDTO {
     private String firstName;
     private String lastName;
     private String email;
-    private String status; // "active", "paused", or "inactive"
+    private String status;// "active", "paused", or "inactive"
 }
