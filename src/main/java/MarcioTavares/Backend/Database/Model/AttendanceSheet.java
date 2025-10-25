@@ -27,7 +27,7 @@ public class AttendanceSheet {
     private LocalDateTime breakStartTime;
     private LocalDateTime breakEndTime;
     private Integer breakInMinutes;
-    private Integer workTimeInMinutes; // Renamed from elapsedTimeInMinutes
+    private Integer workTimeInMinutes;
     private BigDecimal totalHours;
 
     @ManyToOne(fetch = FetchType.EAGER)

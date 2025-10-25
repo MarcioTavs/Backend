@@ -1,6 +1,7 @@
 package MarcioTavares.Backend.Database.Service;
 
 import MarcioTavares.Backend.Database.DTO.DailyTimesheetDTO;
+import MarcioTavares.Backend.Database.DTO.EmployeeWeeklyTimesheetDTO;
 import MarcioTavares.Backend.Database.DTO.WeeklyTimesheetDTO;
 import MarcioTavares.Backend.Database.Model.AttendanceSheet;
 import MarcioTavares.Backend.Database.Model.Employee;
@@ -14,17 +15,11 @@ import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.DayOfWeek;
 import java.time.format.TextStyle;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @AllArgsConstructor
-
 public class TimingService {
 
     private final EmployeeService employeeService;
@@ -42,17 +37,14 @@ public class TimingService {
     public AttendanceSheet clockIn() {
         Employee emp = employeeService.getCurrentAuthenticatedEmployee();
         Optional<AttendanceSheet> att = attendanceRepository.findByEmployeeAndClockOutTimeIsNull(emp);
-
         if (att.isPresent()) {
             throw new IllegalStateException("Sorry You are already logged in");
         }
 
         LocalDate date = LocalDate.now();
-
         if (attendanceRepository.existsByEmployeeAndDate(emp, date)) {
             throw new IllegalStateException("You already have a work session for today");
         }
-
         AttendanceSheet attendanceSheet = new AttendanceSheet();
         attendanceSheet.setEmployee(emp);
         attendanceSheet.setDate(date);
@@ -61,6 +53,24 @@ public class TimingService {
         System.out.println("Clock-in at: " + attendanceSheet.getClockInTime());
         return attendanceRepository.save(attendanceSheet);
     }
+
+    @Transactional
+    public AttendanceSheet startBreak() {
+        Employee emp = employeeService.getCurrentAuthenticatedEmployee();
+        AttendanceSheet att = attendanceRepository.findByEmployeeAndClockOutTimeIsNull(emp)
+                .orElseThrow(() -> new IllegalStateException("No active clock-in session found"));
+        if (att.getBreakStartTime() != null && att.getBreakEndTime() == null) {
+            throw new IllegalStateException("A break is already in progress");
+        }
+        LocalDateTime now = LocalDateTime.now();
+        att.calculateAndSetWorkTimeInMinutes(now);
+        att.setBreakStartTime(now);
+        att.setBreakEndTime(null);
+        System.out.println("Break started at: " + att.getBreakStartTime());
+        return attendanceRepository.save(att);
+    }
+
+
 
     @Transactional
     public AttendanceSheet clockOut() {
@@ -81,21 +91,7 @@ public class TimingService {
         return attendanceRepository.save(att);
     }
 
-    @Transactional
-    public AttendanceSheet startBreak() {
-        Employee emp = employeeService.getCurrentAuthenticatedEmployee();
-        AttendanceSheet att = attendanceRepository.findByEmployeeAndClockOutTimeIsNull(emp)
-                .orElseThrow(() -> new IllegalStateException("No active clock-in session found"));
-        if (att.getBreakStartTime() != null && att.getBreakEndTime() == null) {
-            throw new IllegalStateException("A break is already in progress");
-        }
-        LocalDateTime now = LocalDateTime.now();
-        att.calculateAndSetWorkTimeInMinutes(now);
-        att.setBreakStartTime(now);
-        att.setBreakEndTime(null);
-        System.out.println("Break started at: " + att.getBreakStartTime());
-        return attendanceRepository.save(att);
-    }
+
 
     @Transactional
     public AttendanceSheet endBreak() {
@@ -160,5 +156,25 @@ public class TimingService {
         }
 
         return dto;
+    }
+
+    @Transactional(readOnly = true)
+    public List<EmployeeWeeklyTimesheetDTO> getAllEmployeesWeeklyReport(LocalDate weekStart) {
+        List<Employee> employees = employeeService.getAllEmployees();
+        List<EmployeeWeeklyTimesheetDTO> timesheets = new ArrayList<>();
+
+        for (Employee emp : employees) {
+            WeeklyTimesheetDTO weeklyDTO = getWeeklyReport(emp, weekStart);
+            EmployeeWeeklyTimesheetDTO employeeTimesheet = new EmployeeWeeklyTimesheetDTO(
+                    emp.getEmployeeId(),
+                    emp.getFirstName(),
+                    emp.getLastName(),
+                    emp.getEmail(),
+                    weeklyDTO
+            );
+            timesheets.add(employeeTimesheet);
+        }
+
+        return timesheets;
     }
 }

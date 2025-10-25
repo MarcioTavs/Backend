@@ -1,6 +1,7 @@
 package MarcioTavares.Backend.Database.Service;
 
-import MarcioTavares.Backend.Database.DTO.DepartmentUpdateRequest;
+import MarcioTavares.Backend.Database.DTO.DepartmentDTO;
+
 import MarcioTavares.Backend.Database.Model.Department;
 
 import MarcioTavares.Backend.Database.Repository.DepartmentRepository;
@@ -42,7 +43,7 @@ public class DepartmentService {
 
 
     @Transactional
-    public Department updateDepartment(DepartmentUpdateRequest departUpdate, String departId) {
+    public Department updateDepartment(DepartmentDTO departUpdate, String departId) {
         Department department = departmentRepository.findByDepartmentId(departId);
         if (department == null) {
             throw new IllegalArgumentException("Department not found");

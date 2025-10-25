@@ -1,0 +1,45 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: ontrack-mysql
+    restart: always
+    environment:
+      MYSQL_DATABASE: ontrackweb
+      MYSQL_ROOT_PASSWORD: 12345678
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  ontrack-app:
+    build: .
+    container_name: ontrack-app
+    restart: always
+    depends_on:
+      - mysql
+    ports:
+      - "8090:8090"
+    environment:
+      SPRING_APPLICATION_NAME: OnTrack
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/ontrackweb
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: 12345678
+      SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.MySQLDialect
+      SPRING_JPA_HIBERNATE_DDL_AUTO: create-drop
+      SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL: "true"
+      SPRING_JPA_SHOW_SQL: "true"
+      LOGGING_LEVEL_ORG_HIBERNATE_SQL: DEBUG
+      LOGGING_LEVEL_ORG_HIBERNATE_TYPE_DESCRIPTOR_SQL: trace
+      SPRING_MAIL_HOST: smtp.gmail.com
+      SPRING_MAIL_PORT: 587
+      SPRING_MAIL_USERNAME: marciomossoro2001@gmail.com
+      SPRING_MAIL_PASSWORD: qznrjmkgrcxjyqfu
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: "true"
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: "true"
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_REQUIRED: "true"
+      JWT_SECRET: 2b7e151628aed2a6abf7158809cf4f3c2b7e151628aed2a6abf7158809cf4f3c
+      JWT_EXPIRATION: 8640000
+      SERVER_PORT: 8090
+
+volumes:
+  mysql_data:

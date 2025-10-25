@@ -1,7 +1,7 @@
 package MarcioTavares.Backend.Database.Service;
 
 
-import MarcioTavares.Backend.Database.DTO.EmployeeUpdateRequest;
+import MarcioTavares.Backend.Database.DTO.*;
 
 import MarcioTavares.Backend.Database.Model.Employee;
 
@@ -12,7 +12,6 @@ import MarcioTavares.Backend.Security.Utils.JwtUtil;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -35,10 +34,59 @@ public class EmployeeService {
     private JwtUtil jwtUtil;
 
 
+
     public List<Employee> getAllEmployees() {
         return employeeRepository.findAll();
     }
 
+
+
+
+
+    @Transactional
+    public EmployeeDTO getEmployeeProfile() {
+        Employee emp = getCurrentAuthenticatedEmployee();
+        DepartmentDTO deptDTO = new DepartmentDTO();
+        deptDTO.setDepartmentId(emp.getDepartment().getDepartmentId());
+        deptDTO.setDepartmentName(emp.getDepartmentName());
+
+        return new EmployeeDTO(
+                emp.getEmployeeId(),
+                emp.getFirstName(),
+                emp.getLastName(),
+                emp.getProject(),
+                emp.getPhoneNumber(),
+                emp.getEmail(),
+                deptDTO
+        );
+    }
+
+
+    private UserDetails createUserDetails(User user) {
+        return new org.springframework.security.core.userdetails.User(
+                user.getUsername(),
+                user.getPassword(),
+                user.isActive(),
+                true,
+                true,
+                true,
+                java.util.Collections.singleton(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_" + user.getRole().name()))
+        );
+    }
+
+
+
+    public void activateAccount(String employeeEmail,String apiKey) {
+        User employee = userRepository.findByEmail(employeeEmail).orElseThrow(() -> new RuntimeException("Employee not found"));
+
+        if(!Objects.equals(employee.getApikey(), apiKey)) {
+            throw new IllegalArgumentException("Invalid API key provided");
+
+        }
+
+        employee.setActive(true);
+        userRepository.save(employee);
+    }
 
     @Transactional
     public Employee updateEmployeeData(EmployeeUpdateRequest employeeUpdate, String email) {
@@ -57,12 +105,6 @@ public class EmployeeService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-//        if (employeeUpdate.getFirstName() != null || employeeUpdate.getLastName() != null) {
-//            String newUsername = (employeeUpdate.getFirstName() != null ? employeeUpdate.getFirstName() : emp.getFirstName()) +
-//                    " " + (employeeUpdate.getLastName() != null ? employeeUpdate.getLastName() : emp.getLastName());
-//            user.setUsername(newUsername);
-//        }
-
 
         if (employeeUpdate.getPassword() != null &&
                 employeeUpdate.getConfirmPassword() != null &&
@@ -79,17 +121,7 @@ public class EmployeeService {
         return emp;
     }
 
-    public void activateAccount(String employeeEmail,String apiKey) {
-        User employee = userRepository.findByEmail(employeeEmail).orElseThrow(() -> new RuntimeException("Employee not found"));
 
-        if(!Objects.equals(employee.getApikey(), apiKey)) {
-            throw new IllegalArgumentException("Invalid API key provided");
-
-        }
-
-        employee.setActive(true);
-        userRepository.save(employee);
-    }
 
 
     public Employee getCurrentAuthenticatedEmployee() {
@@ -110,31 +142,43 @@ public class EmployeeService {
     }
 
 
-//    public AuthResponse loginEmployee(AuthRequest request) {
-//        User user = userRepository.findByEmail(request.getUsername())
-//                .orElseThrow(() -> new RuntimeException("User not found"));
-//
-//
-//        Authentication authentication = authenticationManager.authenticate(
-//                new UsernamePasswordAuthenticationToken(user.getUsername(), request.getPassword()));
-//
-//        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-//        String token = jwtUtil.generateToken(userDetails);
-//
-//        return new AuthResponse(token, user.getUsername(), user.getRole().name(), "Login successful");
-//
-//    }
 
-    private UserDetails createUserDetails(User user) {
-        return new org.springframework.security.core.userdetails.User(
-                user.getUsername(),
-                user.getPassword(),
-                user.isActive(),
-                true,
-                true,
-                true,
-                java.util.Collections.singleton(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_" + user.getRole().name()))
-        );
+    //para atualizar somemente o nome e last nome
+    @Transactional
+    public Employee updateEmployeeDetails(EmpDetailsDTO empDetailsDTO, String email) {
+        Employee emp = employeeRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Employee not found"));
+
+        if (empDetailsDTO.getFirstName() != null) {
+            emp.setFirstName(empDetailsDTO.getFirstName());
+        }
+        if (empDetailsDTO.getLastName() != null) {
+            emp.setLastName(empDetailsDTO.getLastName());
+        }
+        if (empDetailsDTO.getPhoneNumber() != null) {
+            emp.setPhoneNumber(empDetailsDTO.getPhoneNumber());
+        }
+
+        employeeRepository.save(emp);
+        return emp;
+    }
+
+
+    //para atualizar somente o password
+
+    @Transactional
+    public void updateEmployeePassword(PasswordUpdateDTO passwordUpdateDTO, String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (passwordUpdateDTO.getNewPassword() != null &&
+                passwordUpdateDTO.getConfirmPassword() != null &&
+                passwordUpdateDTO.getNewPassword().equals(passwordUpdateDTO.getConfirmPassword())) {
+            user.setPassword(passwordEncoder.encode(passwordUpdateDTO.getNewPassword()));
+            userRepository.save(user);
+        } else {
+            throw new RuntimeException("New password and confirm password must match");
+        }
     }
 
 

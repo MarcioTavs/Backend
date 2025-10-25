@@ -105,11 +105,10 @@ public class PayrollReportService {
                 totalHours = totalHours.add(attendance.getTotalHours());
             }
         }
-
         // Calculate regular hours (8 hours per day max)
         BigDecimal regularHours = BigDecimal.valueOf(Math.min(totalDays * 8, totalHours.doubleValue()));
 
-        // Calculate overtime hours
+        // to Calculate overtime hours
         BigDecimal overtimeHours = totalHours.subtract(regularHours);
         if (overtimeHours.compareTo(BigDecimal.ZERO) < 0) {
             overtimeHours = BigDecimal.ZERO;

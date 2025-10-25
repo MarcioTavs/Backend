@@ -7,13 +7,10 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class AdminUpdateRequest {
-    private String organizationName;
+public class EmployeeWeeklyTimesheetDTO {
+    private String employeeId;
     private String firstName;
     private String lastName;
     private String email;
-    private String phoneNumber;
-    private String username;
-    private String password;
-    private String confirmPassword;
+    private WeeklyTimesheetDTO weeklyTimesheet;
 }
