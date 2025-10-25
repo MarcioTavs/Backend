@@ -12,5 +12,4 @@ public class ActivateAccountRequest {
     private String email;
     private String apiKey;
 
-
 }

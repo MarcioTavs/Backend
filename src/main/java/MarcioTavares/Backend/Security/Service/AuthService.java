@@ -14,6 +14,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
@@ -22,18 +23,36 @@ public class AuthService {
 
     @Autowired
     private UserRepository userRepository;
-
     @Autowired
     private AdminRepository adminRepository;
-
     @Autowired
     private PasswordEncoder passwordEncoder;
-
     @Autowired
     private JwtUtil jwtUtil;
 
     @Autowired
     private AuthenticationManager authenticationManager;
+
+
+    public AuthResponse login(AuthRequest request) {
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
+        );
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+
+
+        User user = userRepository.findByUsername(userDetails.getUsername()).orElseThrow();
+        if (!user.isActive()) {
+            throw new RuntimeException("Account is not active");
+        }
+        user.setLastLoginAt(LocalDateTime.now());
+        userRepository.save(user);
+
+        String token = jwtUtil.generateToken(userDetails);
+
+        return new AuthResponse(token, user.getUsername(), user.getRole().name(), "Login successful");
+    }
+
 
     public AuthResponse registerAdmin(AdminSignUpRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
@@ -72,25 +91,6 @@ public class AuthService {
 
 
 
-    public AuthResponse login(AuthRequest request) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
-        );
-
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        User user = userRepository.findByUsername(userDetails.getUsername()).orElseThrow();
-
-        if (!user.isActive()) {
-            throw new RuntimeException("Account is not active");
-        }
-
-        user.setLastLoginAt(LocalDateTime.now());
-        userRepository.save(user);
-
-        String token = jwtUtil.generateToken(userDetails);
-
-        return new AuthResponse(token, user.getUsername(), user.getRole().name(), "Login successful");
-    }
 
 
     private UserDetails createUserDetails(User user) {

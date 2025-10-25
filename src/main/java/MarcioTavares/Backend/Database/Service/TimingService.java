@@ -37,17 +37,14 @@ public class TimingService {
     public AttendanceSheet clockIn() {
         Employee emp = employeeService.getCurrentAuthenticatedEmployee();
         Optional<AttendanceSheet> att = attendanceRepository.findByEmployeeAndClockOutTimeIsNull(emp);
-
         if (att.isPresent()) {
             throw new IllegalStateException("Sorry You are already logged in");
         }
 
         LocalDate date = LocalDate.now();
-
         if (attendanceRepository.existsByEmployeeAndDate(emp, date)) {
             throw new IllegalStateException("You already have a work session for today");
         }
-
         AttendanceSheet attendanceSheet = new AttendanceSheet();
         attendanceSheet.setEmployee(emp);
         attendanceSheet.setDate(date);
@@ -56,6 +53,24 @@ public class TimingService {
         System.out.println("Clock-in at: " + attendanceSheet.getClockInTime());
         return attendanceRepository.save(attendanceSheet);
     }
+
+    @Transactional
+    public AttendanceSheet startBreak() {
+        Employee emp = employeeService.getCurrentAuthenticatedEmployee();
+        AttendanceSheet att = attendanceRepository.findByEmployeeAndClockOutTimeIsNull(emp)
+                .orElseThrow(() -> new IllegalStateException("No active clock-in session found"));
+        if (att.getBreakStartTime() != null && att.getBreakEndTime() == null) {
+            throw new IllegalStateException("A break is already in progress");
+        }
+        LocalDateTime now = LocalDateTime.now();
+        att.calculateAndSetWorkTimeInMinutes(now);
+        att.setBreakStartTime(now);
+        att.setBreakEndTime(null);
+        System.out.println("Break started at: " + att.getBreakStartTime());
+        return attendanceRepository.save(att);
+    }
+
+
 
     @Transactional
     public AttendanceSheet clockOut() {
@@ -76,21 +91,7 @@ public class TimingService {
         return attendanceRepository.save(att);
     }
 
-    @Transactional
-    public AttendanceSheet startBreak() {
-        Employee emp = employeeService.getCurrentAuthenticatedEmployee();
-        AttendanceSheet att = attendanceRepository.findByEmployeeAndClockOutTimeIsNull(emp)
-                .orElseThrow(() -> new IllegalStateException("No active clock-in session found"));
-        if (att.getBreakStartTime() != null && att.getBreakEndTime() == null) {
-            throw new IllegalStateException("A break is already in progress");
-        }
-        LocalDateTime now = LocalDateTime.now();
-        att.calculateAndSetWorkTimeInMinutes(now);
-        att.setBreakStartTime(now);
-        att.setBreakEndTime(null);
-        System.out.println("Break started at: " + att.getBreakStartTime());
-        return attendanceRepository.save(att);
-    }
+
 
     @Transactional
     public AttendanceSheet endBreak() {

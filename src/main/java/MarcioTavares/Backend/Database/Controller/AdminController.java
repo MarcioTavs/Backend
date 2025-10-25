@@ -26,27 +26,11 @@ import java.util.List;
 @AllArgsConstructor
 
 public class AdminController {
+
     private final AdminService adminService;
     private final DepartmentService departmentService;
     private final EmployeeService employeeService;
     private final TimingService timingService;
-
-
-
-
-    @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/profile")
-    public ResponseEntity<AdminDetailsDTO> getAdminProfile() {
-        try {
-            AdminDetailsDTO profile = adminService.getAdminProfile();
-            return ResponseEntity.ok(profile);
-        } catch (Exception e) {
-            System.out.printf("Error fetching admin profile: %s\n", e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
-    }
-
-
 
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -63,19 +47,16 @@ public class AdminController {
         }
     }
 
-
-    @PutMapping("/update-department")
-    public ResponseEntity<?> updateDepartment(@RequestBody DepartmentDTO departmentDTO, @RequestParam String departId) {
-        try{
-            Department updatedDepartment =departmentService.updateDepartment(departmentDTO , departId);
-            return ResponseEntity.ok(updatedDepartment);
-
+    @GetMapping("/get-all-employees")
+    public ResponseEntity<?> getAllEmployees() {
+        try {
+            List<Employee> employees = employeeService.getAllEmployees();
+            return ResponseEntity.ok(employees);
         }catch (Exception e){
-            System.out.printf("Error: %s\n",e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
-
     }
+
 
 
     @GetMapping("/get-all-departments")
@@ -138,8 +119,36 @@ public class AdminController {
         }
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/profile")
+    public ResponseEntity<AdminDetailsDTO> getAdminProfile() {
+        try {
+            AdminDetailsDTO profile = adminService.getAdminProfile();
+            return ResponseEntity.ok(profile);
+        } catch (Exception e) {
+            System.out.printf("Error fetching admin profile: %s\n", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
 
-    //    @PreAuthorize("hasRole('ADMIN')")
+
+
+
+    @PutMapping("/update-department")
+    public ResponseEntity<?> updateDepartment(@RequestBody DepartmentDTO departmentDTO, @RequestParam String departId) {
+        try{
+            Department updatedDepartment =departmentService.updateDepartment(departmentDTO , departId);
+            return ResponseEntity.ok(updatedDepartment);
+
+        }catch (Exception e){
+            System.out.printf("Error: %s\n",e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+
+    }
+
+
+
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/update-details")
     public ResponseEntity<?> updateAdminDetails(@RequestBody AdminDetailsDTO adminDetailsDTO) {
@@ -166,15 +175,6 @@ public class AdminController {
     }
 
 
-    @GetMapping("/get-all-employees")
-    public ResponseEntity<?> getAllEmployees() {
-        try {
-            List<Employee> employees = employeeService.getAllEmployees();
-            return ResponseEntity.ok(employees);
-        }catch (Exception e){
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-    }
 
 
     @PreAuthorize("hasRole('ADMIN')")

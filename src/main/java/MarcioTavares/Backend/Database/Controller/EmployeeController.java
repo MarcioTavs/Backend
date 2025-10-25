@@ -21,6 +21,32 @@ public class EmployeeController {
     private final TimingService timingService;
 
 
+    @PostMapping("/activate-account")
+    public ResponseEntity<?> activateAccount(@RequestBody ActivateAccountRequest request) {
+        try{
+            employeeService.activateAccount(request.getEmail(), request.getApiKey());
+            return ResponseEntity.ok().body("Account activated");
+        }catch (Exception e){
+            return ResponseEntity.badRequest().body(e.getMessage());
+
+        }
+    }
+
+    @PreAuthorize("hasRole('EMPLOYEE')")
+    @GetMapping("/weekly-report")
+    public ResponseEntity<?> getEmployeeWeeklyReport(@RequestParam String startDate) {
+        try {
+            LocalDate weekStart = LocalDate.parse(startDate);
+            Employee currentEmployee = employeeService.getCurrentAuthenticatedEmployee();
+            WeeklyTimesheetDTO report = timingService.getWeeklyReport(currentEmployee, weekStart);
+            return ResponseEntity.ok(report);
+        } catch (Exception e) {
+            System.out.printf("Error fetching employee weekly report: %s\n", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+
 
     @PreAuthorize("hasRole('EMPLOYEE')")
     @GetMapping("/profile")
@@ -36,16 +62,7 @@ public class EmployeeController {
 
 
 
-    @PostMapping("/activate-account")
-    public ResponseEntity<?> activateAccount(@RequestBody ActivateAccountRequest request) {
-        try{
-            employeeService.activateAccount(request.getEmail(), request.getApiKey());
-            return ResponseEntity.ok().body("Account activated");
-        }catch (Exception e){
-            return ResponseEntity.badRequest().body(e.getMessage());
 
-        }
-    }
 
     @PostMapping("/Profile/confirm")
     public ResponseEntity<?> confirmEmployee(@RequestBody EmployeeUpdateRequest employeeUpdateRequest, @RequestParam String employeeEmail) {
@@ -87,19 +104,6 @@ public class EmployeeController {
 
 
 
-    @PreAuthorize("hasRole('EMPLOYEE')")
-    @GetMapping("/weekly-report")
-    public ResponseEntity<?> getEmployeeWeeklyReport(@RequestParam String startDate) {
-        try {
-            LocalDate weekStart = LocalDate.parse(startDate);
-            Employee currentEmployee = employeeService.getCurrentAuthenticatedEmployee();
-            WeeklyTimesheetDTO report = timingService.getWeeklyReport(currentEmployee, weekStart);
-            return ResponseEntity.ok(report);
-        } catch (Exception e) {
-            System.out.printf("Error fetching employee weekly report: %s\n", e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-        }
-    }
 
 
 
